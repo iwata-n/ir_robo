@@ -2,13 +2,15 @@
  * @author Iwata,N
  */
 
+/** ①ロボットのバンド設定 */
 #define BAND         (B00)
 
+/** ②各状態でのスピード */
 #define LOW_SPEED    (50)
 #define NORMAL_SPEED (100)
 #define TURBO_SPEED  (255)
 
-/** ピン設定 */
+/** ③ピン設定 */
 #define IR_SENSOR    (2)  /* 赤外線センサ */
 #define PWMA         (6)
 #define PWMB         (5)
@@ -17,6 +19,7 @@
 #define BIN1         (A0) /* 将来、USBホストシールドをつけることを考慮 */
 #define BIN2         (A1) /* 将来、USBホストシールドをつけることを考慮 */
 
+/** ④制御データの定義 */
 #define CTRL_F       (B0001)  /* 前進 */
 #define CTRL_B       (B0010)  /* 後退 */
 #define CTRL_L       (B0011)  /* ステアリング左 */
@@ -29,13 +32,13 @@
 #define CTRL_BL      (B1010)  /* 後退+ステアリング左 */
 #define CTRL_BR      (B1011)  /* 後退+ステアリング右 */
 #define CTRL_TB      (B1100)  /* ターボ+後退 */
-#define CTRL_TBL     (B1101)  /*  */
-#define CTRL_TBR     (B1110)  /*  */
+#define CTRL_TBL     (B1101)  /* ターボ+後退+ステアリング左 */
+#define CTRL_TBR     (B1110)  /* ターボ+後退+ステアリング右 */
 #define CTRL_STOP    (B1111)  /* 停止 */
 
 
 /**
- * モーター１を回す
+ * ⑤モーター１を回す
  *
  * @param[in] power 出力値(==0:停止 >0:正転 <0:逆転)
  */
@@ -73,7 +76,7 @@ void motor2(int power) {
 }
 
 /**
- * setup
+ * ⑥setup関数
  */
 void setup() {
   /* for debug */
@@ -87,14 +90,14 @@ void setup() {
 }
 
 /**
- * loop
+ * ⑦loop関数
  */
 void loop() {
   unsigned long duration = 0;
   byte band = 0;
   byte data = 0;
 
-  /* スタートビット検出待ち */
+  // ⑧スタートデータ検出待ち
   do {
     duration = pulseIn(IR_SENSOR, LOW);
     if (duration == 0) {
@@ -103,7 +106,7 @@ void loop() {
     }
   } while( 1700 > duration || duration > 2100 );
   
-  /* バンドを取得 */
+  // ⑨バンドデータを取得
   for(int i=0; i<2; i++) {
     duration = pulseIn(IR_SENSOR, LOW);
     if ( 800 < duration && duration < 1200) {
@@ -111,7 +114,7 @@ void loop() {
     }
   }
   
-  /* データを取得 */
+  // ⑩制御データを取得
   for(int i=0; i<4; i++) {
     duration = pulseIn(IR_SENSOR, LOW);
     if ( 800 < duration && duration < 1200) {
@@ -119,7 +122,8 @@ void loop() {
     }
   }
   
-  /** for debug
+  /*
+  // for debug
   Serial.print("BAND:");
   Serial.println(band, DEC);
   Serial.print("DATA:");
@@ -127,7 +131,7 @@ void loop() {
   Serial.println();
   */
   
-  /* バンドが一致する場合のみ動作する */
+  // ⑪バンドデータが一致する場合のみ動作する
   if (band == BAND) {
     switch(data) {
       case CTRL_F:
@@ -207,7 +211,7 @@ void loop() {
         break;
     }
   } else {
-    /* バンドが一致しない場合は停止 */
+    // ⑫バンドデータが一致しない場合は停止
     motor1(0);
     motor2(0);
   }
